@@ -29,13 +29,13 @@ class Azure extends Blue
 class Navy extends Blue
 class Sky extends Blue
 
- def matchWithGenericType[B<:Blue]: T = {
+ def matchWithGenericType[B<:Blue]: Unit = {
     T match {
-      case _: Cyan => new Cyan()
-      case _: Azure => new Azure()
-      case _: Navy => new Navy()
-      case _: Sky => new Sky()
-      case _ => new Blue()
+      case _: Cyan => println("Cyan colour")
+      case _: Azure => println("Azure colour")
+      case _: Navy => println("Navy colour")
+      case _: Sky => println("Sky colour")
+      case _ => println("Blue colour")
     }
   //Does not compile
   ```
@@ -63,16 +63,18 @@ object AvoidingTypeErasureExample {
   val NavyType = classTag[Navy]
   val SkyType = classTag[Sky]
 
-  def matchWithGenericType[T](implicit t: ClassTag[T]): T = {
+  def matchWithGenericType[B](implicit t: ClassTag[B]): B = {
     t match {
-      case CyanType => new Cyan().asInstanceOf[T]
-      case AzureType => new Azure().asInstanceOf[T]
-      case NavyType => new Navy().asInstanceOf[T]
-      case SkyType => new Sky().asInstanceOf[T]
-      case _ => new Blue().asInstanceOf[T]
+      case _: Cyan => println("Cyan colour")
+      case _: Azure => println("Azure colour")
+      case _: Navy => println("Navy colour")
+      case _: Sky => println("Sky colour")
+      case _ => println("Blue colour")
     }
   }
 }
+AvoidingTypeErasureExample.matchWithGenericType[Cyan] //Cyan colour
+
   ```
 So now, type passed as type parameter can be used 
 to perform pattern matching, therefore its instance could be 
@@ -83,7 +85,7 @@ Now, let´s mix this solution with an ObjectFactory pattern style and see what a
 advantages of doing so.
 
 ### Factory pattern example
-Let's expose the problem, we have a class object type called ColourJob, which it has a different number of classes inheriting from it 
+Let's expose the problem, we have a class object type called ```ColourJob```, which it has a different number of classes inheriting from it 
 (```BlueJob```, (```AzureJob```, ```CyanJob```, ```...```), ```GreenJob```, ```RedJob```, ```...```). The primary constructor of all classes that 
 inherits from ```ColourJob``` are composed by ```(jobName: String, dbReader: DbReader)```. 
 As it can be seen their values depends on their class, so they are not just overwriting the father´s variables.
@@ -126,10 +128,9 @@ class RedJob(jobName: String, dbReader: DbReader) extends ColourJob(jobName, dbR
   val cyan = CyanJob("My-first-cyan-job", new DbReader)
    ```
  That is ok, but that case is not interesting as it is not contemplating any complex scenario.
- So as it is logic, let´s make the DbReader is a trait that represents a fake Database Reader, which it will have
-  different subtypes of it, in which in that case has been defined four of them as: 
+ So as it is logic, let´s make the ```DbReader``` a trait that represents a fake database reader that has 
+  different subtypes of it, in which in that case four of them were defined as: 
     (```MariaDbReader```, ```MySqlReader```, ```OracleReader``` and ```PostgresSqlReader```)
-    
   ```scala
 trait DbReader{
   def getField(fieldName: String): String
@@ -156,8 +157,8 @@ class PostgreSqlDbReader(rowId: String, postgreSqlConnection: DbConnections.Conn
   override def getConnection:DbConnections.ConnectionType = postgreSqlConnection
 }
   ```
-  As you probably have already appreciated, each DbReader has a constructor parameter that represents the database connection.
-  That parameter is just used to simulate a more realistic scenario, so they are not implemented.
+  As you probably have already appreciated, each ```DbReader``` has a constructor parameter that represents the database connection.
+  That parameter is just used to simulate a more realistic scenario, so it is not implemented.
   
   Let´s see what is happening now if we try to create a Job:
 ```scala
@@ -165,7 +166,7 @@ val cyanJob = new CyanJob("My-second-cyan-job", new PostgreSqlDbReader("thisIsTh
 ```
 As it could be seen, the creation statement is too long and tought to read, so it is a good practice to have the creation
 of this object encapsulated in another class.     
-  So given that scenario, the creation of an ObjectFactory fits so well, which here is its definition from Scala Design Patterns book:
+  So given that scenario, the creation of an ObjectFactory fits so well, which here is its definition copied from the ´Scala Design Patterns´ book:
   
   ´This design pattern deals with the creation of objects without explicitly specifying the actual class that
    the instance will have—it could be something that is decided at runtime based on many factors. 
@@ -201,14 +202,14 @@ def detectAndCreateJob(jobName: String, dbReader: DbReader, classType: Object) =
 And at the end what we have is a JobFactory that allows the programmer to 
 instantiate this classes through a clean and fashion way:
 ```scala  
-val cyanJob = JobFactory().readFromOracle[CyanJob]("1234")
+val cyanJob = JobFactory().readFromOracle[CyanJob]("RowId1234")
 ```
 
-Moreover, the dynamic return type allows the developer to know what are functions
-of the created job without having to use ´asInstanceOf[Job]´ to cast to its corresponding type and then use its definitions.
+Moreover, the dynamic return type allows the developer to know what are functions and values
+of the created job without having to use ```asInstanceOf[Job]``` to cast to its corresponding type and then use its definitions.
 
-To finish, the whole example´s code has been pasted below. 
-I hope you can find it useful!
+To finish, the whole example´s code has been pasted below. You can also find it in the scala worksheet ```Reflects.sc```.
+I hope you found it useful!:)
 
 ```scala
 import scala.reflect._
