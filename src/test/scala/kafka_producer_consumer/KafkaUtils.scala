@@ -8,6 +8,7 @@ import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.streaming.dstream.InputDStream
+
 class KafkaUtils {
 
     val brokers = "9999:9092,9998:9092"

@@ -1,4 +1,4 @@
-## Dynamic factory pattern for avoiding type erasure in Scala
+## Generic factory pattern avoiding type erasure in Scala
 
 This document explains a fashion way to perform a Factory pattern for dynamic 
 object creation by using generics and scala reflects to 
@@ -12,16 +12,16 @@ to explicitly remove type parameters.
 
 Even the fact that with Scala you can pattern match
 on a wide range of arbitrary types of values, you can not do that with type parameters.
-Since it is a JVM-based language, and as Java does not know about generics, they are implemented
+Since it is a JVM-based language, they are implemented
 with type erasure so that the bytecode generated would be interoperable.
 
-So in resume, it means that at runtime, the compiler is not able to differentiate between types, 
-p.e: ```Array[Int]``` and ```Array[String]```.
+So in summary, it means that at runtime, the compiler is not able to differentiate 
+between types passed as generics into a function or class, p.e: ```Array[Int]``` and ```Array[String]```.
 
-And this could be a problem if you want to get a function that could dynamicaly return the 
+And this could be a problem if you want to get a function that could dynamically return the 
 generic type passed. There is an example below that will help to understand the problem.
-In the example there is a class called Blue, with 4 child classes that represents the different types of blue. 
-Also there is a function called ```returnGenericType```, that is aimed to return an instance of the blue sub type passed as generic type.
+It is a class called Blue, with 4 child classes that represents the different types of blue. 
+Also there is a function called ```matchWithGenericType```, which it returns an instance of the blue sub type passed as generic type.
   ```scala
 class Blue
 class Cyan extends Blue
@@ -29,17 +29,17 @@ class Azure extends Blue
 class Navy extends Blue
 class Sky extends Blue
 
- def returnGernicType[B<:Blue]: T = {
-    t match {
-      case _: Cyan => new Cyan().asInstanceOf[T]
-      case _: Azure => new Azure().asInstanceOf[T]
-      case _: Navy => new Navy().asInstanceOf[T]
-      case _: Sky => new Sky().asInstanceOf[T]
-      case _ => new Blue().asInstanceOf[T]
+ def matchWithGenericType[B<:Blue]: T = {
+    T match {
+      case _: Cyan => new Cyan()
+      case _: Azure => new Azure()
+      case _: Navy => new Navy()
+      case _: Sky => new Sky()
+      case _ => new Blue()
     }
-  //This does not compile
+  //Does not compile
   ```
-This is a dummy example just to show one capability that would be idealistic but that in fact is not allowed and can never work in Scala. Since you can not pattern 
+This is a dummy example just to show one capability that would be idealistic, but that in fact is not allowed and can never work in Scala. Since you can not pattern 
 match for the generic type ```[T]```, because pattern matching is resolved at runtime which means that the parameter type will be erased and therefore, lost.
 
 So, in order to avoid the ```Type Erasure```, Scala provides ```Manifests```, divided into (```TypeTags```, ```ClassTags``` and ```WaekTypeTags```).
@@ -63,7 +63,7 @@ object AvoidingTypeErasureExample {
   val NavyType = classTag[Navy]
   val SkyType = classTag[Sky]
 
-  def returnGernicType[T](implicit t: ClassTag[T]): T = {
+  def matchWithGenericType[T](implicit t: ClassTag[T]): T = {
     t match {
       case CyanType => new Cyan().asInstanceOf[T]
       case AzureType => new Azure().asInstanceOf[T]
@@ -91,41 +91,41 @@ As it can be seen their values depends on their class, so they are not just over
   ```scala
 
 class ColourJob(val jobName: String, val dbReader: DbReader) {
-  val COLOUR_FIELD = dbReader getField "ColourField"
-  val COLOUR_FIELD_1 = COLOUR_FIELD + "_1"
-  val COLOUR_FIELD_2 = COLOUR_FIELD + "_2"
+  val colourField = dbReader getField "ColourField"
+  val colourField_1 = colourField + "_1"
+  val colourField_2 = colourField + "_2"
 }
 class BlueJob(jobName: String,  dbReader: DbReader) extends ColourJob(jobName, dbReader) {
-  val BLUE_FIELD = dbReader getField "BlueField"
-  val BLUE_FIELD_1 = BLUE_FIELD + "_1"
+  val blueField = dbReader getField "BlueField"
+  val blueField_1 = blueField + "_1"
 }
 class AzureJob(jobName: String,  dbReader: DbReader) extends BlueJob(jobName, dbReader) {
-  val AZURE_FIELD = dbReader getField "AzureBlueField"
-  val AZURE_FIELD_1 = AZURE_FIELD + "_1"
-  val AZURE_FIELD_2 = AZURE_FIELD + "_2"
+  val azureField = dbReader getField "AzureBlueField"
+  val azureField_1 = azureField + "_1"
+  val azureField_2 = azureField + "_2"
 }
 class CyanJob(jobName: String, dbReader: DbReader) extends BlueJob(jobName, dbReader) {
-  val CYAN_FIELD = dbReader getField "CyanBlueField"
-  val CYAN_FIELD_1 = CYAN_FIELD + "_1"
-  val CYAN_FIELD_2 = CYAN_FIELD + "_2"
+  val cyanField = dbReader getField "CyanBlueField"
+  val cyanField_1 = cyanField + "_1"
+  val cyanField_2 = cyanField + "_2"
 }
 class GreenJob(jobName: String,  dbReader: DbReader) extends ColourJob(jobName, dbReader) {
-  val GREEN_FIELD = dbReader getField "GreenField"
-  val GREEN_FIELD_1 = GREEN_FIELD + "_1"
-  val GREEN_FIELD_2 = GREEN_FIELD + "_2"
+  val greenField = dbReader getField "GreenField"
+  val greenField_1 = greenField + "_1"
+  val greenField_2 = greenField + "_2"
 }
 
 class RedJob(jobName: String, dbReader: DbReader) extends ColourJob(jobName, dbReader) {
-  val RED_FIELD = dbReader getField "RedField"
-  val RED_FIELD_1 = RED_FIELD + "_1"
-  val RED_FIELD_2 = RED_FIELD + "_2"
+  val redField = dbReader getField "RedField"
+  val redField_1 = redField + "_1"
+  val redField_2 = redField + "_2"
 }
   ```
  Until that point if we want to create an instance of a Job, we could do that directly by using the following statement:
   ```scala
   val cyan = CyanJob("My-first-cyan-job", new DbReader)
    ```
- That is ok, but that case is not interesting as it is not contemplating the scenario that we where to arrive.
+ That is ok, but that case is not interesting as it is not contemplating any complex scenario.
  So as it is logic, let´s make the DbReader is a trait that represents a fake Database Reader, which it will have
   different subtypes of it, in which in that case has been defined four of them as: 
     (```MariaDbReader```, ```MySqlReader```, ```OracleReader``` and ```PostgresSqlReader```)
@@ -211,6 +211,7 @@ To finish, the whole example´s code has been pasted below.
 I hope you can find it useful!
 
 ```scala
+import scala.reflect._
 
 object DbConnections extends Enumeration {
   type ConnectionType = Value
@@ -223,7 +224,6 @@ object DbConnections extends Enumeration {
   OracleConnection,
   PostgreSqlConnection = Value
 }
-
 
 trait DbReader{
   def getField(fieldName: String): String
@@ -251,37 +251,36 @@ class PostgreSqlDbReader(rowId: String, postgreSqlConnection: DbConnections.Conn
 }
 
 class ColourJob(val jobName: String, val dbReader: DbReader) {
-  val COLOUR_FIELD = dbReader getField "ColourField"
-  val COLOUR_FIELD_1 = COLOUR_FIELD + "_1"
-  val COLOUR_FIELD_2 = COLOUR_FIELD + "_2"
+  val colourField = dbReader getField "ColourField"
+  val colourField_1 = colourField + "_1"
+  val colourField_2 = colourField + "_2"
 }
 class BlueJob(jobName: String,  dbReader: DbReader) extends ColourJob(jobName, dbReader) {
-  val BLUE_FIELD = dbReader getField "BlueField"
-  val BLUE_FIELD_1 = BLUE_FIELD + "_1"
+  val blueField = dbReader getField "BlueField"
+  val blueField_1 = blueField + "_1"
 }
 class AzureJob(jobName: String,  dbReader: DbReader) extends BlueJob(jobName, dbReader) {
-  val AZURE_FIELD = dbReader getField "AzureBlueField"
-  val AZURE_FIELD_1 = AZURE_FIELD + "_1"
-  val AZURE_FIELD_2 = AZURE_FIELD + "_2"
+  val azureField = dbReader getField "AzureBlueField"
+  val azureField_1 = azureField + "_1"
+  val azureField_2 = azureField + "_2"
 }
 class CyanJob(jobName: String, dbReader: DbReader) extends BlueJob(jobName, dbReader) {
-  val CYAN_FIELD = dbReader getField "CyanBlueField"
-  val CYAN_FIELD_1 = CYAN_FIELD + "_1"
-  val CYAN_FIELD_2 = CYAN_FIELD + "_2"
+  val cyanField = dbReader getField "CyanBlueField"
+  val cyanField_1 = cyanField + "_1"
+  val cyanField_2 = cyanField + "_2"
 }
 class GreenJob(jobName: String,  dbReader: DbReader) extends ColourJob(jobName, dbReader) {
-  val GREEN_FIELD = dbReader getField "GreenField"
-  val GREEN_FIELD_1 = GREEN_FIELD + "_1"
-  val GREEN_FIELD_2 = GREEN_FIELD + "_2"
+  val greenField = dbReader getField "GreenField"
+  val greenField_1 = greenField + "_1"
+  val greenField_2 = greenField + "_2"
 }
 
 class RedJob(jobName: String, dbReader: DbReader) extends ColourJob(jobName, dbReader) {
-  val RED_FIELD = dbReader getField "RedField"
-  val RED_FIELD_1 = RED_FIELD + "_1"
-  val RED_FIELD_2 = RED_FIELD + "_2"
+  val redField = dbReader getField "RedField"
+  val redField_1 = redField + "_1"
+  val redField_2 = redField + "_2"
 }
 
-import scala.reflect._
 class JobFactory(var jobName: String) {
   val ColourJob = classTag[ColourJob]
   val BlueJobType = classTag[BlueJob]
@@ -328,6 +327,6 @@ object JobFactory {
 //val cyanJob = new CyanJob("My-second-cyan-job", new PostgreSqlDbReader("thisIsTheRowId012930",new DbConnections.PostgreSqlConnection(...)))
 
 val cyanJob = JobFactory().readFromOracle[CyanJob]("RowId1234")
-cyanJob.CYAN_FIELD
+cyanJob.cyanField
 
 ```

@@ -1,6 +1,7 @@
 package kafka_producer_consumer
 
 import org.apache.spark.SparkConf
+
 class Launcher {
   def main(args : Array[String]) {
 
