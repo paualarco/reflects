@@ -1,2 +1,7 @@
 **/.idea/
 .idea/
+build\.sbt
+
+target/
+
+project/

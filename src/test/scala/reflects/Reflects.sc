@@ -12,7 +12,6 @@ object DbConnections extends Enumeration {
   PostgreSqlConnection = Value
 }
 
-
 trait DbReader{
   def getField(fieldName: String): String
   def getConnection: DbConnections.ConnectionType
@@ -39,34 +38,34 @@ class PostgreSqlDbReader(rowId: String, postgreSqlConnection: DbConnections.Conn
 }
 
 class ColourJob(val jobName: String, val dbReader: DbReader) {
-  val COLOUR_FIELD = dbReader getField "ColourField"
-  val COLOUR_FIELD_1 = COLOUR_FIELD + "_1"
-  val COLOUR_FIELD_2 = COLOUR_FIELD + "_2"
+  val colourField = dbReader getField "ColourField"
+  val colourField_1 = colourField + "_1"
+  val colourField_2 = colourField + "_2"
 }
 class BlueJob(jobName: String,  dbReader: DbReader) extends ColourJob(jobName, dbReader) {
-  val BLUE_FIELD = dbReader getField "BlueField"
-  val BLUE_FIELD_1 = BLUE_FIELD + "_1"
+  val blueField = dbReader getField "BlueField"
+  val blueField_1 = blueField + "_1"
 }
 class AzureJob(jobName: String,  dbReader: DbReader) extends BlueJob(jobName, dbReader) {
-  val AZURE_FIELD = dbReader getField "AzureBlueField"
-  val AZURE_FIELD_1 = AZURE_FIELD + "_1"
-  val AZURE_FIELD_2 = AZURE_FIELD + "_2"
+  val azureField = dbReader getField "AzureBlueField"
+  val azureField_1 = azureField + "_1"
+  val azureField_2 = azureField + "_2"
 }
 class CyanJob(jobName: String, dbReader: DbReader) extends BlueJob(jobName, dbReader) {
-  val CYAN_FIELD = dbReader getField "CyanBlueField"
-  val CYAN_FIELD_1 = CYAN_FIELD + "_1"
-  val CYAN_FIELD_2 = CYAN_FIELD + "_2"
+  val cyanField = dbReader getField "CyanBlueField"
+  val cyanField_1 = cyanField + "_1"
+  val cyanField_2 = cyanField + "_2"
 }
 class GreenJob(jobName: String,  dbReader: DbReader) extends ColourJob(jobName, dbReader) {
-  val GREEN_FIELD = dbReader getField "GreenField"
-  val GREEN_FIELD_1 = GREEN_FIELD + "_1"
-  val GREEN_FIELD_2 = GREEN_FIELD + "_2"
+  val greenField = dbReader getField "GreenField"
+  val greenField_1 = greenField + "_1"
+  val greenField_2 = greenField + "_2"
 }
 
 class RedJob(jobName: String, dbReader: DbReader) extends ColourJob(jobName, dbReader) {
-  val RED_FIELD = dbReader getField "RedField"
-  val RED_FIELD_1 = RED_FIELD + "_1"
-  val RED_FIELD_2 = RED_FIELD + "_2"
+  val redField = dbReader getField "RedField"
+  val redField_1 = redField + "_1"
+  val redField_2 = redField + "_2"
 }
 
 class JobFactory(var jobName: String) {
@@ -115,7 +114,7 @@ object JobFactory {
 //val cyanJob = new CyanJob("My-second-cyan-job", new PostgreSqlDbReader("thisIsTheRowId012930",new DbConnections.PostgreSqlConnection(...)))
 
 val cyanJob = JobFactory().readFromOracle[CyanJob]("RowId1234")
-cyanJob.CYAN_FIELD
+cyanJob.cyanField
 
 
 
