@@ -50,11 +50,6 @@ In which the problem has been solved using ClassTags as you can see in the follo
 
 import scala.reflect.ClassTag
 import scala.reflect.classTag
-class Blue
-class Cyan extends Blue
-class Azure extends Blue
-class Navy extends Blue
-class Sky extends Blue
 
 object AvoidingTypeErasureExample {
   val BlueType = classTag[Blue]
@@ -97,20 +92,24 @@ class ColourJob(val jobName: String, val dbReader: DbReader) {
   val colourField_1 = colourField + "_1"
   val colourField_2 = colourField + "_2"
 }
+
 class BlueJob(jobName: String,  dbReader: DbReader) extends ColourJob(jobName, dbReader) {
   val blueField = dbReader getField "BlueField"
   val blueField_1 = blueField + "_1"
 }
+
 class AzureJob(jobName: String,  dbReader: DbReader) extends BlueJob(jobName, dbReader) {
   val azureField = dbReader getField "AzureBlueField"
   val azureField_1 = azureField + "_1"
   val azureField_2 = azureField + "_2"
 }
+
 class CyanJob(jobName: String, dbReader: DbReader) extends BlueJob(jobName, dbReader) {
   val cyanField = dbReader getField "CyanBlueField"
   val cyanField_1 = cyanField + "_1"
   val cyanField_2 = cyanField + "_2"
 }
+
 class GreenJob(jobName: String,  dbReader: DbReader) extends ColourJob(jobName, dbReader) {
   val greenField = dbReader getField "GreenField"
   val greenField_1 = greenField + "_1"
@@ -164,11 +163,12 @@ class PostgreSqlDbReader(rowId: String, postgreSqlConnection: DbConnections.Conn
 ```scala
 val cyanJob = new CyanJob("My-second-cyan-job", new PostgreSqlDbReader("thisIsTheRowId012930",new DbConnections.PostgreSqlConnection(...)))
 ```
-As it could be seen, the creation statement is too long and tought to read, so it is a good practice to have the creation
-of this object encapsulated in another class.     
-  So given that scenario, the creation of an ObjectFactory fits so well, which here is its definition copied from the ´Scala Design Patterns´ book:
-  
-  ´This design pattern deals with the creation of objects without explicitly specifying the actual class that
+As it could be seen, the creation statement is too long and thought to read, it is a good practice to have the creation
+of this object encapsulated in another class as a dependency injection.     
+
+  So given that scenario, a cake pattern could be performed, but instead it has been choose the Factory pattern, that in that it fits as well in that case.
+  Here is the its definition from the book ´Scala Desgn Patterns´:
+  ´The factory design pattern deals with the creation of objects without explicitly specifying the actual class that
    the instance will have—it could be something that is decided at runtime based on many factors. 
    Some of these factors can include operating systems, different data types, or input parameters.
    It gives developers the peace of mind of just calling a method rather than invoking a concrete constructor.´
@@ -256,20 +256,24 @@ class ColourJob(val jobName: String, val dbReader: DbReader) {
   val colourField_1 = colourField + "_1"
   val colourField_2 = colourField + "_2"
 }
+
 class BlueJob(jobName: String,  dbReader: DbReader) extends ColourJob(jobName, dbReader) {
   val blueField = dbReader getField "BlueField"
   val blueField_1 = blueField + "_1"
 }
+
 class AzureJob(jobName: String,  dbReader: DbReader) extends BlueJob(jobName, dbReader) {
   val azureField = dbReader getField "AzureBlueField"
   val azureField_1 = azureField + "_1"
   val azureField_2 = azureField + "_2"
 }
+
 class CyanJob(jobName: String, dbReader: DbReader) extends BlueJob(jobName, dbReader) {
   val cyanField = dbReader getField "CyanBlueField"
   val cyanField_1 = cyanField + "_1"
   val cyanField_2 = cyanField + "_2"
 }
+
 class GreenJob(jobName: String,  dbReader: DbReader) extends ColourJob(jobName, dbReader) {
   val greenField = dbReader getField "GreenField"
   val greenField_1 = greenField + "_1"
